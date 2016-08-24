@@ -29,6 +29,7 @@
   "dependencies": {
     "concat-stream": "^1.5.1",
     "electron-debug": "^1.0.0",
+    "lodash": "^4.15.0",
     "merge-stream": "^1.0.0"
   },
   "devDependencies": {
