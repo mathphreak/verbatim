@@ -1,7 +1,7 @@
 {
   "name": "verbatim",
   "productName": "Verbatim",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "",
   "license": "MIT",
   "repository": "mathphreak/verbatim",
@@ -14,7 +14,9 @@
   "scripts": {
     "test": "xo",
     "start": "electron .",
-    "build": "electron-packager . --out=dist --app-version=$npm_package_version --prune --asar --overwrite --all"
+    "build:pkg": "electron-packager . --out=dist --prune --asar --overwrite --all",
+    "build:run": "node build.js",
+    "build": "npm run build:pkg && npm run build:run"
   },
   "files": [
     "main.js",
@@ -34,9 +36,11 @@
     "shell-quote": "^1.6.1"
   },
   "devDependencies": {
+    "archiver": "^1.0.1",
     "devtron": "^1.1.0",
+    "electron": "1.3.4",
     "electron-packager": "^7.0.0",
-    "electron": "^1.0.1",
+    "shelljs": "^0.7.3",
     "xo": "^0.16.0"
   },
   "xo": {
