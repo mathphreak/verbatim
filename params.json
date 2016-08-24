@@ -1,6 +1,6 @@
 {
   "name": "Verbatim",
   "tagline": "",
-  "body": "Verbatim runs two programs against a series of test cases and ensures that they give the same output.",
+  "body": "# Description\r\nVerbatim runs two programs against a series of test cases and ensures that they give the same output.\r\n\r\n# Usage\r\nDo the thing.",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
 }
