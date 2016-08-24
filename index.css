@@ -44,6 +44,7 @@ h1 {
   padding: 0.5rem 0;
   border: 2px solid #444;
   border-width: 2px 0;
+  white-space: pre-wrap;
 }
 
 .exe-output.subject .success {
