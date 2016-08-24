@@ -81,3 +81,7 @@ input {
 #args input {
   width: 40rem;
 }
+
+#error:not([hidden]) {
+  background-color: #F77;
+}

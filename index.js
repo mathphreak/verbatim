@@ -10,7 +10,17 @@ const _ = require('lodash');
 let runningProcesses = [];
 let subjectWatcher;
 
+function handleError(err) {
+  document.querySelector('#error').hidden = false;
+  document.querySelector('#error .name').innerText = err.name;
+  document.querySelector('#error .message').innerText = err.message;
+}
+
+process.on('uncaughtException', handleError);
+
 function updateForms() {
+  document.querySelector('#error').hidden = true;
+
   if (runningProcesses.length > 0 || subjectWatcher !== undefined) {
     document.getElementById('run').innerText = 'Stop!';
   } else {
@@ -32,7 +42,7 @@ function run(exePath, inputFile, options, handleOutput) {
   runningProcesses.push(process);
   input.pipe(process.stdin);
   merge(process.stdout, process.stderr).pipe(output);
-  process.on('error', err => console.log(err));
+  process.on('error', handleError);
   process.on('exit', () => {
     runningProcesses = runningProcesses.filter(p => p !== process);
     updateForms();
