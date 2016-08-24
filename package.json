@@ -13,7 +13,7 @@
   "scripts": {
     "test": "xo",
     "start": "electron .",
-    "build:pkg": "electron-packager . --out=dist --prune --asar --overwrite --all",
+    "build:pkg": "electron-packager . --out=dist --prune --asar --overwrite --platform=darwin,linux,win32 --arch=all",
     "build:run": "node build.js",
     "build": "npm run build:pkg && npm run build:run"
   },
