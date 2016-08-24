@@ -7,11 +7,39 @@
 	</head>
 	<body>
 		<div class="container">
-			<header>
-				<h1>Electron boilerplate</h1>
-			</header>
-			<section class="main"></section>
-			<footer></footer>
+			<section id="exes">
+        <h1>Executables</h1>
+        <div class="row">
+  				<form class="exe-input subject">
+            <label>
+              Your executable:
+              <br>
+              <input type="file" name="subject">
+            </label>
+          </form>
+          <form class="exe-input truth">
+            <label>
+              Authoritative executable:
+              <br>
+              <input type="file" name="truth">
+            </label>
+          </form>
+        </div>
+			</section>
+			<section id="cases">
+        <h1>Test cases:</h1>
+        <ul>
+          <li><input type="file" multiple name="testcase"></li>
+        </ul>
+      </section>
+      <section id="output">
+        <button type="button" id="run">Run!</button>
+        <div class="row">
+          <div class="exe-output subject"></div>
+          <div class="exe-output truth"></div>
+        </div>
+      </section>
 		</div>
+    <script src="index.js"></script>
 	</body>
 </html>

@@ -1,44 +1,58 @@
-'use strict';
-const electron = require('electron');
+const child = require('child_process');
+const fs = require('fs');
+const concat = require('concat-stream');
+const merge = require('merge-stream');
 
-const app = electron.app;
-
-// adds debug features like hotkeys for triggering dev tools and reload
-require('electron-debug')();
-
-// prevent window being garbage collected
-let mainWindow;
-
-function onClosed() {
-  // dereference the window
-  // for multiple windows store them in an array
-  mainWindow = null;
+function run(exePath, inputFile, handleOutput) {
+  function finished(result) {
+    handleOutput(result.toString('utf8'));
+  }
+  const output = concat(finished);
+  const input = fs.createReadStream(inputFile);
+  const process = child.spawn(exePath);
+  input.pipe(process.stdin);
+  merge(process.stdout, process.stderr).pipe(output);
+  process.on('error', err => console.log(err));
 }
 
-function createMainWindow() {
-  const win = new electron.BrowserWindow({
-    width: 600,
-    height: 400
+function compare(subjectPath, truthPath, testCase) {
+  const results = {};
+  run(subjectPath, testCase, out => {
+    results.subject = out;
+    handleResults();
+  });
+  run(truthPath, testCase, out => {
+    results.truth = out;
+    handleResults();
   });
 
-  win.loadURL(`file://${__dirname}/index.html`);
-  win.on('closed', onClosed);
-
-  return win;
+  function handleResults() {
+    if (results.subject !== undefined && results.truth !== undefined) {
+      const className = (results.subject === results.truth ? 'success' : 'failure');
+      const subjectNode = document.createElement('pre');
+      const truthNode = document.createElement('pre');
+      subjectNode.innerText = results.subject;
+      truthNode.innerText = results.truth;
+      const subjectParent = document.createElement('div');
+      const truthParent = document.createElement('div');
+      subjectParent.className = truthParent.className = className;
+      subjectParent.appendChild(subjectNode);
+      truthParent.appendChild(truthNode);
+      document.querySelector('.exe-output.subject').appendChild(subjectParent);
+      document.querySelector('.exe-output.truth').appendChild(truthParent);
+    }
+  }
 }
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
+document.getElementById('run').addEventListener('click', () => {
+  const subjectPath = document.querySelector('input[name="subject"]').files[0].path;
+  const truthPath = document.querySelector('input[name="truth"]').files[0].path;
+  const testCases = Array.from(document.querySelectorAll('input[name="testcase"]')).map(x => Array.from(x.files)).reduce((a, b) => a.concat(b)).map(x => x.path);
 
-app.on('activate', () => {
-  if (!mainWindow) {
-    mainWindow = createMainWindow();
+  Array.from(document.querySelectorAll('.exe-output')).forEach(x => {
+    x.innerHTML = '';
+  });
+  for (const tcPath of testCases) {
+    compare(subjectPath, truthPath, tcPath);
   }
-});
-
-app.on('ready', () => {
-  mainWindow = createMainWindow();
 });

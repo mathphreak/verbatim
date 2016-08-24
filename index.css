@@ -1,27 +1,70 @@
-html,
-body {
+html {
 	padding: 0;
 	margin: 0;
 }
 
 body {
 	font-family: -apple-system, 'Helvetica Neue', Helvetica, sans-serif;
+  padding: 0 1rem;
+  margin: 0;
+  background-color: white;
+  color: #444;
 }
 
-header {
-	position: absolute;
-	width: 500px;
-	height: 250px;
-	top: 50%;
-	left: 50%;
-	margin-top: -125px;
-	margin-left: -250px;
-	text-align: center;
+h1 {
+  margin: 1rem 0;
 }
 
-header h1 {
-	font-size: 60px;
-	font-weight: 100;
-	margin: 0;
-	padding: 0;
+.row {
+	display: flex;
+  flex-flow: row;
+}
+
+.row > * {
+  flex: auto;
+  width: 50%;
+}
+
+#run {
+  display: block;
+  width: 10em;
+  margin: 0px auto;
+}
+
+.exe-output {
+  margin: 0.5rem;
+}
+
+.exe-output div {
+  position: relative;
+}
+
+.exe-output pre {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0;
+  border: 2px solid #444;
+  border-width: 2px 0;
+}
+
+.exe-output.subject .success {
+  color: green;
+}
+
+.exe-output.subject .failure {
+  color: red;
+}
+
+.exe-output.subject .success::after,
+.exe-output.subject .failure::after {
+  position: absolute;
+  right: -0.9rem;
+  top: -2px;
+}
+
+.exe-output.subject .success::after {
+  content: '\2713';
+}
+
+.exe-output.subject .failure::after {
+  content: '\2718';
 }
