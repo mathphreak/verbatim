@@ -43,6 +43,10 @@ input {
   position: relative;
 }
 
+.exe-output p {
+  margin: 0;
+}
+
 .exe-output pre {
   margin: 0.5rem 0;
   padding: 0.5rem 0;

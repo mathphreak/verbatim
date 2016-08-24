@@ -1,5 +1,7 @@
 const child = require('child_process');
 const fs = require('fs');
+const path = require('path');
+
 const concat = require('concat-stream');
 const merge = require('merge-stream');
 const shellQuote = require('shell-quote');
@@ -38,6 +40,33 @@ function run(exePath, inputFile, options, handleOutput) {
   updateForms();
 }
 
+function buildResultNode(text, childClass, parentClass) {
+  const node = document.createElement('pre');
+  node.innerText = text;
+  const child = document.createElement('div');
+  child.className = childClass;
+  child.appendChild(node);
+  const parent = document.createElement('div');
+  parent.className = parentClass;
+  parent.appendChild(child);
+  return parent;
+}
+
+function buildResults(results, testCase) {
+  const className = (results.subject === results.truth ? 'success' : 'failure');
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.appendChild(buildResultNode(results.subject, className, 'exe-output subject'));
+  row.appendChild(buildResultNode(results.truth, className, 'exe-output truth'));
+  const label = document.createElement('p');
+  label.innerText = path.parse(testCase).base;
+  const result = document.createElement('div');
+  result.className = 'exe-output';
+  result.appendChild(label);
+  result.appendChild(row);
+  return result;
+}
+
 function compare(options, testCase) {
   const results = {};
   run(options.subjectPath, testCase, options, out => {
@@ -51,18 +80,7 @@ function compare(options, testCase) {
 
   function handleResults() {
     if (results.subject !== undefined && results.truth !== undefined) {
-      const className = (results.subject === results.truth ? 'success' : 'failure');
-      const subjectNode = document.createElement('pre');
-      const truthNode = document.createElement('pre');
-      subjectNode.innerText = results.subject;
-      truthNode.innerText = results.truth;
-      const subjectParent = document.createElement('div');
-      const truthParent = document.createElement('div');
-      subjectParent.className = truthParent.className = className;
-      subjectParent.appendChild(subjectNode);
-      truthParent.appendChild(truthNode);
-      document.querySelector('.exe-output.subject').appendChild(subjectParent);
-      document.querySelector('.exe-output.truth').appendChild(truthParent);
+      document.getElementById('output').appendChild(buildResults(results, testCase));
     }
   }
 }
@@ -85,9 +103,7 @@ function runTest() {
     args: shellQuote.parse(cliArgs)
   };
 
-  Array.from(document.querySelectorAll('.exe-output')).forEach(x => {
-    x.innerHTML = '';
-  });
+  document.getElementById('output').innerHTML = '';
   for (const tcPath of testCases) {
     compare(options, tcPath);
   }
