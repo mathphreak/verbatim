@@ -2,6 +2,7 @@ const child = require('child_process');
 const fs = require('fs');
 const concat = require('concat-stream');
 const merge = require('merge-stream');
+const shellQuote = require('shell-quote');
 const _ = require('lodash');
 
 let runningProcesses = [];
@@ -19,13 +20,13 @@ function updateForms() {
   });
 }
 
-function run(exePath, inputFile, handleOutput) {
+function run(exePath, inputFile, options, handleOutput) {
   function finished(result) {
     handleOutput(result.toString('utf8'));
   }
   const output = concat(finished);
   const input = fs.createReadStream(inputFile);
-  const process = child.spawn(exePath);
+  const process = child.spawn(exePath, options.args, {cwd: options.cwd});
   runningProcesses.push(process);
   input.pipe(process.stdin);
   merge(process.stdout, process.stderr).pipe(output);
@@ -37,13 +38,13 @@ function run(exePath, inputFile, handleOutput) {
   updateForms();
 }
 
-function compare(subjectPath, truthPath, testCase) {
+function compare(options, testCase) {
   const results = {};
-  run(subjectPath, testCase, out => {
+  run(options.subjectPath, testCase, options, out => {
     results.subject = out;
     handleResults();
   });
-  run(truthPath, testCase, out => {
+  run(options.truthPath, testCase, options, out => {
     results.truth = out;
     handleResults();
   });
@@ -72,11 +73,23 @@ function runTest() {
   const truthPath = document.querySelector('input[name="truth"]').files[0].path;
   const testCases = Array.from(document.querySelectorAll('input[name="testcase"]')).map(x => Array.from(x.files)).reduce((a, b) => a.concat(b)).map(x => x.path);
 
+  const cwdFile = document.querySelector('input[name="cwd"]').files[0];
+  const cwdPath = cwdFile === undefined ? undefined : cwdFile.path;
+
+  const cliArgs = document.querySelector('input[name="args"]').value;
+
+  const options = {
+    subjectPath,
+    truthPath,
+    cwd: cwdPath,
+    args: shellQuote.parse(cliArgs)
+  };
+
   Array.from(document.querySelectorAll('.exe-output')).forEach(x => {
     x.innerHTML = '';
   });
   for (const tcPath of testCases) {
-    compare(subjectPath, truthPath, tcPath);
+    compare(options, tcPath);
   }
 }
 
