@@ -180,6 +180,29 @@ function parseCase(caseDiv) {
   return result;
 }
 
+function addNewCase() {
+  const newCase = buildEmptyCase();
+  function enable(name) {
+    newCase.querySelector(`input[name="${name}-enable"]`).checked = true;
+    newCase.querySelector(`input[name="${name}`).disabled = false;
+    newCase.querySelector(`input[name="${name}`).dataset.disabled = '';
+  }
+  let lastCase = document.querySelector('.case-wrapper:last-child .case');
+  if (lastCase) {
+    lastCase = parseCase(lastCase);
+    if (lastCase.workdir !== undefined) {
+      enable('workdir');
+    }
+    if (lastCase.args !== undefined) {
+      enable('args');
+    }
+    if (lastCase.stdin !== undefined) {
+      enable('stdin');
+    }
+  }
+  document.getElementById('cases').appendChild(newCase);
+}
+
 function compare(subjectPath, truthPath, testCase) {
   const results = {};
   run(subjectPath, testCase, out => {
@@ -227,8 +250,6 @@ document.getElementById('run').addEventListener('click', () => {
   }
 });
 
-document.getElementById('new-case').addEventListener('click', () => {
-  document.querySelector('#cases').appendChild(buildEmptyCase());
-});
+document.getElementById('new-case').addEventListener('click', addNewCase);
 
-document.querySelector('#cases').appendChild(buildEmptyCase());
+addNewCase();
