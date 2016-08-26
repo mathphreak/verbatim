@@ -15,11 +15,11 @@ h1 {
   margin: 1rem 0;
 }
 
-input {
+input, button {
   vertical-align: text-top;
 }
 
-.row {
+.row, .case p, .case-wrapper {
 	display: flex;
   flex-flow: row;
 }
@@ -27,6 +27,49 @@ input {
 .row > * {
   flex: auto;
   width: 50%;
+}
+
+.exe-input input[type="file"] {
+  width: 100%;
+}
+
+.case p > :first-child {
+  flex: none;
+  width: 33%;
+  min-width: 15em;
+}
+
+.case p > :last-child {
+  flex: auto;
+}
+
+.exe-output:only-child > p {
+  display: none;
+}
+
+.case-wrapper > :first-child {
+  flex: auto;
+}
+
+.case-wrapper > :last-child {
+  flex: none;
+  margin-left: 1em;
+}
+
+.case-wrapper:only-child .name {
+  display: none;
+}
+
+.case-wrapper:not(:first-child) {
+  margin-top: 2em;
+}
+
+.case p:first-child, .case-wrapper:only-child .case p:nth-child(2) {
+  margin-top: 0;
+}
+
+.case p:last-child {
+  margin-bottom: 0;
 }
 
 #run {
@@ -76,10 +119,6 @@ input {
 
 .exe-output.subject .failure::after {
   content: '\2718';
-}
-
-#args input {
-  width: 40rem;
 }
 
 #error:not([hidden]) {

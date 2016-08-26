@@ -31,27 +31,16 @@
           </form>
         </div>
 			</section>
-			<section id="cases">
-        <h1>Test cases</h1>
-        <ul>
-          <li><input type="file" multiple name="testcase"></li>
-        </ul>
-      </section>
-      <section id="cwd">
-        <h3>
-          Working directory:
-          <input type="file" name="cwd" webkitdirectory>
-        </h3>
-      </section>
-      <section id="args">
-        <h3>
-          Command line arguments:
-          <input type="text" name="args">
-        </h3>
+			<section id="cases-wrapper">
+        <h1>
+          Test cases
+          <button type="button" id="new-case">+</button>
+        </h1>
+        <div id="cases"></div>
       </section>
       <section id="error" hidden>
         <h2 class="name"></h2>
-        <p class="message"></p>
+        <pre class="stack"></pre>
       </section>
       <section id="output-wrapper">
         <button type="button" id="run">Run!</button>
