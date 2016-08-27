@@ -124,3 +124,22 @@ input, button {
 #error:not([hidden]) {
   background-color: #F77;
 }
+
+.file-input {
+  align-items: baseline;
+  color: inherit;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.file-input span {
+  font-size: 80%;
+}
+
+.file-input.disabled {
+  color: rgb(84, 84, 84);
+}
+
+.file-input.disabled button {
+  color: inherit;
+}

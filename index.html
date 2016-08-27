@@ -11,11 +11,14 @@
         <h1>Executables</h1>
         <div class="row">
   				<form class="exe-input subject">
-            <label>
+            <div>
               Your executable:
               <br>
-              <input type="file" name="subject">
-            </label>
+              <span class="file-input" data-name="subject">
+                <button type="button">Choose File</button>
+                <span>LOADING</span>
+              </span>
+            </div>
             <br>
             <label>
               <input type="checkbox" name="watch-subject">
@@ -26,7 +29,10 @@
             <label>
               Authoritative executable:
               <br>
-              <input type="file" name="truth">
+              <span class="file-input" data-name="truth">
+                <button type="button">Choose File</button>
+                <span>No file chosen</span>
+              </span>
             </label>
           </form>
         </div>

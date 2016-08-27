@@ -1,21 +1,129 @@
+'use strict';
+
 const child = require('child_process');
 const fs = require('fs');
+const pathMod = require('path');
 
 const concat = require('concat-stream');
 const merge = require('merge-stream');
 const shellQuote = require('shell-quote');
 const _ = require('lodash');
 
+const ipc = require('electron').ipcRenderer;
+
 let runningProcesses = [];
 let subjectWatcher;
+
+function abbreviatePath(origPath) {
+  const pathDetails = pathMod.parse(origPath);
+  const fullDir = pathDetails.dir.replace(pathDetails.root, '');
+  const segments = fullDir.split(pathMod.sep);
+  let shorterSegments = segments;
+  if (segments.length >= 6) {
+    shorterSegments = segments.slice(0, 1).concat('…').concat(segments.slice(segments.length - 1));
+  }
+  shorterSegments = shorterSegments.map(segment => {
+    if (segment.length < 6) {
+      return segment;
+    }
+    return segment.substr(0, 2) + '…' + segment.substr(segment.length - 2);
+  });
+  const shortDir = pathDetails.root + pathMod.join(...shorterSegments);
+  pathDetails.dir = shortDir;
+  return pathMod.format(pathDetails);
+}
+
+function buildFileInput(folder = false) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.innerText = 'Choose File';
+  if (folder) {
+    button.innerText = 'Choose Folder';
+  }
+  const span = document.createElement('span');
+  span.innerText = 'No file chosen';
+  if (folder) {
+    span.innerText = 'No folder chosen';
+  }
+  const result = document.createElement('span');
+  result.className = 'file-input';
+  if (folder) {
+    result.classList.add('folder-input');
+  }
+  result.appendChild(button);
+  result.appendChild(document.createTextNode(' '));
+  result.appendChild(span);
+
+  let resultPath;
+
+  button.addEventListener('click', () => {
+    ipc.send('open', {
+      properties: [folder ? 'openDirectory' : 'openFile']
+    });
+    ipc.once('open', (evt, path) => {
+      if (path) {
+        resultPath = path[0];
+        span.innerText = abbreviatePath(resultPath);
+      }
+    });
+  });
+
+  // Do some magic
+  Object.defineProperty(result, 'disabled', {
+    configurable: false,
+    enumerable: false,
+    get() {
+      return result.classList.contains('disabled');
+    },
+    set(disabled) {
+      if (disabled) {
+        result.classList.add('disabled');
+        result.dataset.disabled = 'disabled';
+        button.disabled = true;
+      } else {
+        result.classList.remove('disabled');
+        result.dataset.disabled = '';
+        button.disabled = false;
+      }
+    }
+  });
+  Object.defineProperty(result, 'name', {
+    configurable: false,
+    enumerable: false,
+    get() {
+      return result.dataset.name;
+    },
+    set(name) {
+      result.dataset.name = name;
+    }
+  });
+  Object.defineProperty(result, 'value', {
+    configurable: false,
+    enumerable: false,
+    get() {
+      throw new Error('can\'t get a value');
+    }
+  });
+  Object.defineProperty(result, 'files', {
+    configurable: false,
+    enumerable: false,
+    get() {
+      if (resultPath === undefined) {
+        return [];
+      }
+      return [{path: resultPath}];
+    }
+  });
+  return result;
+}
 
 function buildCaseLabel(context, name, text) {
   const enable = document.createElement('input');
   enable.type = 'checkbox';
   enable.name = name + '-enable';
   enable.addEventListener('change', () => {
-    context.querySelector(`input[name="${name}"]`).disabled = !enable.checked;
-    context.querySelector(`input[name="${name}"]`).dataset.disabled = enable.checked ? '' : true;
+    context.querySelector(`[data-name="${name}"]`).disabled = !enable.checked;
+    context.querySelector(`[data-name="${name}"]`).dataset.disabled = enable.checked ? '' : true;
   });
   const label = document.createElement('label');
   label.appendChild(enable);
@@ -35,11 +143,11 @@ function buildEmptyCase() {
   nameP.appendChild(name);
 
   const workdirLabel = buildCaseLabel(result, 'workdir', 'Working directory:');
-  const workdir = document.createElement('input');
+  const workdir = buildFileInput(true);
   workdir.disabled = true;
   workdir.dataset.disabled = true;
   workdir.type = 'file';
-  workdir.name = 'workdir';
+  workdir.name = workdir.dataset.name = 'workdir';
   workdir.webkitdirectory = true;
   const workdirP = document.createElement('p');
   workdirP.className = 'workdir';
@@ -51,18 +159,18 @@ function buildEmptyCase() {
   args.disabled = true;
   args.dataset.disabled = true;
   args.type = 'text';
-  args.name = 'args';
+  args.name = args.dataset.name = 'args';
   const argsP = document.createElement('p');
   argsP.className = 'args';
   argsP.appendChild(argsLabel);
   argsP.appendChild(args);
 
   const stdinLabel = buildCaseLabel(result, 'stdin', 'Console input file:');
-  const stdin = document.createElement('input');
+  const stdin = buildFileInput();
   stdin.disabled = true;
   stdin.dataset.disabled = true;
   stdin.type = 'file';
-  stdin.name = 'stdin';
+  stdin.name = stdin.dataset.name = 'stdin';
   const stdinP = document.createElement('p');
   stdinP.className = 'stdin';
   stdinP.appendChild(stdinLabel);
@@ -163,7 +271,7 @@ function buildResults(results, testCase) {
 function parseCase(caseDiv) {
   const result = {};
   function input(name) {
-    return caseDiv.querySelector(`input[name="${name}"]`);
+    return caseDiv.querySelector(`input[name="${name}"]`) || caseDiv.querySelector(`[data-name="${name}"]`);
   }
   if (input('workdir-enable').checked && input('workdir').files[0]) {
     result.workdir = input('workdir').files[0].path;
@@ -184,8 +292,13 @@ function addNewCase() {
   const newCase = buildEmptyCase();
   function enable(name) {
     newCase.querySelector(`input[name="${name}-enable"]`).checked = true;
-    newCase.querySelector(`input[name="${name}`).disabled = false;
-    newCase.querySelector(`input[name="${name}`).dataset.disabled = '';
+    if (newCase.querySelector(`input[name="${name}`)) {
+      newCase.querySelector(`input[name="${name}`).disabled = false;
+      newCase.querySelector(`input[name="${name}`).dataset.disabled = '';
+    } else if (newCase.querySelector(`.file-input[data-name=${name}]`)) {
+      newCase.querySelector(`.file-input[data-name=${name}]`).disabled = false;
+      newCase.querySelector(`.file-input[data-name=${name}]`).dataset.disabled = '';
+    }
   }
   let lastCase = document.querySelector('.case-wrapper:last-child .case');
   if (lastCase) {
@@ -223,8 +336,8 @@ function compare(subjectPath, truthPath, testCase) {
 
 function runTest() {
   runningProcesses.forEach(p => p.kill());
-  const subjectPath = document.querySelector('input[name="subject"]').files[0].path;
-  const truthPath = document.querySelector('input[name="truth"]').files[0].path;
+  const subjectPath = document.querySelector('.file-input[data-name="subject"]').files[0].path;
+  const truthPath = document.querySelector('.file-input[data-name="truth"]').files[0].path;
   const testCases = Array.from(document.querySelectorAll('.case')).map(parseCase);
 
   document.getElementById('output').innerHTML = '';
@@ -248,6 +361,14 @@ document.getElementById('run').addEventListener('click', () => {
     }
     updateForms();
   }
+});
+
+Array.from(document.querySelectorAll('.file-input')).forEach(input => {
+  const replacement = buildFileInput();
+  replacement.dataset.name = input.dataset.name;
+  const parent = input.parentNode;
+  parent.insertBefore(replacement, input);
+  input.remove();
 });
 
 document.getElementById('new-case').addEventListener('click', addNewCase);
