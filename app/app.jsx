@@ -8,6 +8,7 @@ const Exes = require('./exes');
 const Cases = require('./cases');
 const ErrorDisplay = require('./error');
 const Output = require('./output');
+const UpdateNotification = require('./update-notification');
 
 const runCases = require('./run-cases');
 
@@ -100,6 +101,7 @@ const App = React.createClass({
     const inProgress = this.state.state !== 'waiting';
     return (
       <div className="container">
+        <UpdateNotification />
         <Exes
           subject={this.state.subject}
           watchSubject={this.state.watchSubject}

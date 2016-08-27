@@ -147,3 +147,7 @@ input, button {
 .file-input.disabled button {
   color: inherit;
 }
+
+#update-notification {
+  font-weight: bold;
+}
