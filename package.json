@@ -12,16 +12,19 @@
   "main": "main.js",
   "scripts": {
     "test": "xo",
-    "start": "electron .",
-    "build:pkg": "electron-packager . --out=dist --prune --asar --overwrite --platform=darwin,linux,win32 --arch=all",
+    "start": "npm run build:js && electron .",
+    "out": "npm run build:js && mkdir out && cp main.js out/ && cp package.json out/ && mkdir \"out/app\" && cp app/*.js out/app/ && cp app/index.* out/app/",
+    "build:js": "babel app/*.jsx -d .",
+    "build:out": "npm run out && cd out && npm install --production",
+    "build:pkg": "electron-packager out --out=dist --prune --asar --overwrite --platform=darwin,linux,win32 --arch=all",
     "build:run": "node build.js",
-    "build": "npm run build:pkg && npm run build:run"
+    "build": "npm run build:out && npm run build:pkg && npm run build:run"
   },
   "files": [
     "main.js",
-    "index.js",
-    "index.html",
-    "index.css"
+    "app/*.js",
+    "app/index.html",
+    "app/index.css"
   ],
   "keywords": [
     "electron-app",
@@ -30,24 +33,50 @@
   "dependencies": {
     "concat-stream": "^1.5.1",
     "electron-debug": "^1.0.0",
+    "electron-window-state": "^3.0.4",
     "lodash": "^4.15.0",
     "merge-stream": "^1.0.0",
+    "react": "^15.3.1",
+    "react-dom": "^15.3.1",
     "shell-quote": "^1.6.1"
   },
   "devDependencies": {
     "archiver": "^1.0.1",
+    "babel-cli": "^6.14.0",
+    "babel-preset-react": "^6.11.1",
     "devtron": "^1.1.0",
     "electron": "1.3.4",
     "electron-packager": "^7.0.0",
+    "electron-react-devtools": "^0.4.0",
+    "eslint": "^3.4.0",
+    "eslint-config-xo-react": "^0.9.0",
+    "eslint-plugin-react": "^6.1.2",
     "shelljs": "^0.7.3",
     "xo": "^0.16.0"
   },
   "xo": {
     "esnext": true,
     "space": true,
+    "extends": [
+      "xo-react"
+    ],
+    "plugins": [
+      "react"
+    ],
+    "rules": {
+      "react/jsx-space-before-closing": [
+        2,
+        "always"
+      ]
+    },
     "envs": [
       "node",
       "browser"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "react"
     ]
   }
 }

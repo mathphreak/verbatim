@@ -1,5 +1,6 @@
 'use strict';
 const electron = require('electron');
+const windowState = require('electron-window-state');
 
 const ipc = electron.ipcMain;
 
@@ -24,12 +25,21 @@ ipc.on('open', (evt, options) => {
 });
 
 function createMainWindow() {
-  const win = new electron.BrowserWindow({
-    width: 800,
-    height: 600
+  const winState = windowState({
+    defaultWidth: 800,
+    defaultHeight: 600
   });
 
-  win.loadURL(`file://${__dirname}/index.html`);
+  const win = new electron.BrowserWindow({
+    x: winState.x,
+    y: winState.y,
+    width: winState.width,
+    height: winState.height
+  });
+
+  winState.manage(win);
+
+  win.loadURL(`file://${__dirname}/app/index.html`);
   win.on('closed', onClosed);
 
   return win;

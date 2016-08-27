@@ -1,3 +1,6 @@
 node_modules
 /dist
 /build
+/out
+/app/*.js
+!/app/run-cases.js
